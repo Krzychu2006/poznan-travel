@@ -166,7 +166,7 @@ if "i_city" not in st.session_state: st.session_state.i_city = 0
 if "i_egzotyka" not in st.session_state: st.session_state.i_egzotyka = 0
 if "i_natura" not in st.session_state: st.session_state.i_natura = 0
 
-# BAZA TRAS Z PROSKIMI, ESTETYCZNYMI ZDJĘCIAMI DLA WYCIECZEK
+# BAZA TRAS (6 WYCIECZEK Z ODPOWIEDNIMI FOTKAMI TRAS)
 dane_raw = """Id,Nazwa,Kategoria,Dni,CenaOsoba,Termin,Zbiorka,LimitOsob,Zdjecie,Opis,Program
 1,Jarmark Bożonarodzeniowy w Dreznie,Jednodniowe,1,260,Grudzień 2026,Poznań Dworzec Letni (05:30),20,https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=700,Najstarsi producenci piernika i słynny Striezelmarkt! Klimatyczny wyjazd małym komfortowym busem.,📌 05:30 – Zbiórka Poznań Dworzec Letni|📌 10:30 – Zwiedzanie Drezna z przewodnikiem|📍 Pałac Zwinger Frauenkirche Opera Sempera|📌 13:30 – Czas wolny na Striezelmarkt|📌 18:30 – Wyjazd w drogę powrotną|📌 23:00 – Powrót do Poznania
 2,Weekend w Berlinie i Poczdamie,Weekendowe,2,690,Maj 2026,Poznań MTP (06:30),20,https://images.unsplash.com/photo-1560969184-10fe8719e047?w=700,Odkryj pałace Sanssouci oraz tętniący życiem Berlin. Nocleg ze śniadaniem w hotelu 3★.,📌 DZIEŃ 1: Wyjazd z Poznania 06:30 ➔ Poczdam Ogrody Sanssouci ➔ Nocleg w Berlinie|📌 DZIEŃ 2: Śniadanie ➔ Brama Brandenburska Reichstag ➔ Rejs statkiem po Szprewie ➔ Powrót 21:00
