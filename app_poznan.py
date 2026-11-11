@@ -11,13 +11,22 @@ st.set_page_config(page_title="Poznań Travel - Wyprawy z Krzysztofem", page_ico
 
 FOLDER_ZDJEC = "zdjecia"
 
+def daj_sciezke(nazwa_pliku):
+    """Szuka pliku zarówno w folderze zdjecia/, jak i w katalogu głównym."""
+    sciezka_folder = os.path.join(FOLDER_ZDJEC, nazwa_pliku)
+    if os.path.exists(sciezka_folder):
+        return sciezka_folder
+    elif os.path.exists(nazwa_pliku):
+        return nazwa_pliku
+    return None
+
 # ==========================================
 # CACHE & ULTRASZYBKI DOWNSCALING
 # ==========================================
 @st.cache_resource
 def zaladuj_i_zmniejsz_zdjecie(nazwa_pliku, max_dim=800):
-    sciezka = os.path.join(FOLDER_ZDJEC, nazwa_pliku)
-    if os.path.exists(sciezka):
+    sciezka = daj_sciezke(nazwa_pliku)
+    if sciezka and os.path.exists(sciezka):
         try:
             img = Image.open(sciezka)
             img = ImageOps.exif_transpose(img)
@@ -154,7 +163,7 @@ if "i_city" not in st.session_state: st.session_state.i_city = 0
 if "i_egzotyka" not in st.session_state: st.session_state.i_egzotyka = 0
 if "i_natura" not in st.session_state: st.session_state.i_natura = 0
 
-# BAZA TRAS
+# BAZA TRAS Z TWOIMI ZDJĘCIAMI
 dane_raw = """Id,Nazwa,Kategoria,Dni,CenaOsoba,Termin,Zbiorka,LimitOsob,Zdjecie,Opis,Program
 1,Jarmark Bożonarodzeniowy w Dreznie,Jednodniowe,1,260,Grudzień 2026,Poznań Dworzec Letni (05:30),20,IMG_3775.jpeg,Najstarsi producenci piernika i słynny Striezelmarkt! Klimatyczny wyjazd małym komfortowym busem.,📌 05:30 – Zbiórka Poznań Dworzec Letni|📌 10:30 – Zwiedzanie Drezna z przewodnikiem|📍 Pałac Zwinger Frauenkirche Opera Sempera|📌 13:30 – Czas wolny na Striezelmarkt|📌 18:30 – Wyjazd w drogę powrotną|📌 23:00 – Powrót do Poznania
 2,Weekend w Berlinie i Poczdamie,Weekendowe,2,690,Maj 2026,Poznań MTP (06:30),20,IMG_4050.jpeg,Odkryj pałace Sanssouci oraz tętniący życiem Berlin. Nocleg ze śniadaniem w hotelu 3★.,📌 DZIEŃ 1: Wyjazd z Poznania 06:30 ➔ Poczdam Ogrody Sanssouci ➔ Nocleg w Berlinie|📌 DZIEŃ 2: Śniadanie ➔ Brama Brandenburska Reichstag ➔ Rejs statkiem po Szprewie ➔ Powrót 21:00
@@ -293,7 +302,7 @@ if tryb_aplikacji == "Katalog Wycieczek":
             st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# WIDOK: O KRZYSZTOFIE (KONKRETNE NAZWY KADRÓW I OPISY)
+# WIDOK: O KRZYSZTOFIE
 # ==========================================
 elif tryb_aplikacji == "🙋‍♂️ O Krzyśku & Galeria Podróży":
     st.markdown("""
@@ -321,11 +330,10 @@ elif tryb_aplikacji == "🙋‍♂️ O Krzyśku & Galeria Podróży":
     st.write("---")
     st.subheader("📸 Osobiste Kadry Krzysztofa z Podróży")
 
-    # PODMIENIONE PRZYCISKI NA NAZWY MIEJSC Z OPISAMI
     z_city = [
         {"plik": "IMG_3676.jpeg", "nazwa": "Big Ben, Londyn", "opis": "Klimat brytyjskiej stolicy i deszczowy spacer nad Tamizą."},
         {"plik": "IMG_7032.jpeg", "nazwa": "Wieża Eiffla, Paryż", "opis": "Klasyczny punkt każdej wyprawy po Francji."},
-        {"plik": "IMG_4050.jpeg", "nazwa": "Brama Brandenburska", "opis": "Weekendowy wypad do Berlina z ekipa."},
+        {"plik": "IMG_4050.jpeg", "nazwa": "Brama Brandenburska", "opis": "Weekendowy wypad do Berlina z ekipą."},
         {"plik": "IMG_3775.jpeg", "nazwa": "Zamek w Trakach", "opis": "Malowniczy zamek na wyspie na Litwie."},
         {"plik": "IMG_2590.jpeg", "nazwa": "Uliczki Europy", "opis": "Odkrywanie mniej znanych zakątków miast."}
     ]
