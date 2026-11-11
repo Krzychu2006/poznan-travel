@@ -12,7 +12,7 @@ st.set_page_config(page_title="Poznań Travel - Wyprawy z Krzysztofem", page_ico
 FOLDER_ZDJEC = "zdjecia"
 
 def daj_sciezke(nazwa_pliku):
-    """Szuka pliku zarówno w folderze zdjecia/, jak i w katalogu głównym."""
+    """Szuka pliku w folderze zdjecia/ lub katalogu głównym."""
     sciezka_folder = os.path.join(FOLDER_ZDJEC, nazwa_pliku)
     if os.path.exists(sciezka_folder):
         return sciezka_folder
@@ -36,16 +36,19 @@ def zaladuj_i_zmniejsz_zdjecie(nazwa_pliku, max_dim=800):
             return None
     return None
 
-def pokaz_zdjecie_szybko(nazwa_pliku):
-    if not nazwa_pliku:
+def pokaz_zdjecie_szybko(zrodlo):
+    if not zrodlo:
         st.image("https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=700", use_container_width=True)
         return
         
-    img_pil = zaladuj_i_zmniejsz_zdjecie(nazwa_pliku)
-    if img_pil is not None:
-        st.image(img_pil, use_container_width=True)
+    if zrodlo.startswith("http"):
+        st.image(zrodlo, use_container_width=True)
     else:
-        st.image("https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=700", use_container_width=True)
+        img_pil = zaladuj_i_zmniejsz_zdjecie(zrodlo)
+        if img_pil is not None:
+            st.image(img_pil, use_container_width=True)
+        else:
+            st.image("https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=700", use_container_width=True)
 
 # ==========================================
 # STYLIZACJA CSS
@@ -163,14 +166,14 @@ if "i_city" not in st.session_state: st.session_state.i_city = 0
 if "i_egzotyka" not in st.session_state: st.session_state.i_egzotyka = 0
 if "i_natura" not in st.session_state: st.session_state.i_natura = 0
 
-# BAZA TRAS Z TWOIMI ZDJĘCIAMI
+# BAZA TRAS Z PROSKIMI, ESTETYCZNYMI ZDJĘCIAMI DLA WYCIECZEK
 dane_raw = """Id,Nazwa,Kategoria,Dni,CenaOsoba,Termin,Zbiorka,LimitOsob,Zdjecie,Opis,Program
-1,Jarmark Bożonarodzeniowy w Dreznie,Jednodniowe,1,260,Grudzień 2026,Poznań Dworzec Letni (05:30),20,IMG_3775.jpeg,Najstarsi producenci piernika i słynny Striezelmarkt! Klimatyczny wyjazd małym komfortowym busem.,📌 05:30 – Zbiórka Poznań Dworzec Letni|📌 10:30 – Zwiedzanie Drezna z przewodnikiem|📍 Pałac Zwinger Frauenkirche Opera Sempera|📌 13:30 – Czas wolny na Striezelmarkt|📌 18:30 – Wyjazd w drogę powrotną|📌 23:00 – Powrót do Poznania
-2,Weekend w Berlinie i Poczdamie,Weekendowe,2,690,Maj 2026,Poznań MTP (06:30),20,IMG_4050.jpeg,Odkryj pałace Sanssouci oraz tętniący życiem Berlin. Nocleg ze śniadaniem w hotelu 3★.,📌 DZIEŃ 1: Wyjazd z Poznania 06:30 ➔ Poczdam Ogrody Sanssouci ➔ Nocleg w Berlinie|📌 DZIEŃ 2: Śniadanie ➔ Brama Brandenburska Reichstag ➔ Rejs statkiem po Szprewie ➔ Powrót 21:00
-3,Górski Reset: Karpacz i Karkonosze,Wyprawy Górskie,4,1150,Czerwiec 2026,Poznań Dworzec Letni (07:00),18,IMG_4698.JPG,Kameralny wyjazd w Góry. Zdobywamy Śnieżkę wchodzimy do Świątyni Wang i odpoczywamy.,📌 DZIEŃ 1: Wyjazd 07:00 ➔ Karpacz ➔ Świątynia Wang|📌 DZIEŃ 2: Śnieżka przez Samotnię|📌 DZIEŃ 3: Szklarska Poręba i Wodospad|📌 DZIEŃ 4: Termy Cieplickie i powrót
-4,Magiczny Jarmark we Wrocławiu,Jednodniowe,1,180,Grudzień 2026,Poznań Dworzec Letni (07:30),20,IMG_2590.jpeg,Najpiękniejszy jarmark w Polsce! Bajkowy klimat Wrocławskiego Rynku bez martwienia się o auto.,📌 07:30 – Wyjazd z Poznania|📌 10:00 – Spacer z przewodnikiem po Ostrowie Tumskim|📌 13:00 – Czas wolny na jarmarku|📌 19:00 – Wyjazd z Wrocławia | 21:30 Powrót
-5,Urokliwy Szprewald – Niemiecka Wenecja,Jednodniowe,1,290,Lipiec 2026,Poznań Dworzec Letni (06:30),20,IMG_6395.jpeg,Tradycyjny rejs łodziami pychówkami po malowniczych kanałach wodnych z degustacją ogórków.,📌 06:30 – Wyjazd z Poznania|📌 10:00 – 3-godzinny rejs płaskodennymi łodziami|📍 Czas wolny w wiosce Lübbenau|📌 17:30 – Wyjazd do Polski | 21:00 Powrót
-6,Wiedeń i Budapeszt – Perły Dunaju,Egzotyka i Objazdówki,4,1490,Majówka 2026,Poznań MTP (05:00),18,IMG_3676.jpeg,Intensywna objazdówka małą grupą! Pałac Schönbrunn w Wiedniu i nocny rejs w Budapeszcie.,📌 DZIEŃ 1: Przejazd do Wiednia|📌 DZIEŃ 2: Zwiedzanie Wiednia i przejazd do Budapesztu|📌 DZIEŃ 3: Budapeszt i wieczorny rejs statkiem|📌 DZIEŃ 4: Powrót do Poznania
+1,Jarmark Bożonarodzeniowy w Dreznie,Jednodniowe,1,260,Grudzień 2026,Poznań Dworzec Letni (05:30),20,https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=700,Najstarsi producenci piernika i słynny Striezelmarkt! Klimatyczny wyjazd małym komfortowym busem.,📌 05:30 – Zbiórka Poznań Dworzec Letni|📌 10:30 – Zwiedzanie Drezna z przewodnikiem|📍 Pałac Zwinger Frauenkirche Opera Sempera|📌 13:30 – Czas wolny na Striezelmarkt|📌 18:30 – Wyjazd w drogę powrotną|📌 23:00 – Powrót do Poznania
+2,Weekend w Berlinie i Poczdamie,Weekendowe,2,690,Maj 2026,Poznań MTP (06:30),20,https://images.unsplash.com/photo-1560969184-10fe8719e047?w=700,Odkryj pałace Sanssouci oraz tętniący życiem Berlin. Nocleg ze śniadaniem w hotelu 3★.,📌 DZIEŃ 1: Wyjazd z Poznania 06:30 ➔ Poczdam Ogrody Sanssouci ➔ Nocleg w Berlinie|📌 DZIEŃ 2: Śniadanie ➔ Brama Brandenburska Reichstag ➔ Rejs statkiem po Szprewie ➔ Powrót 21:00
+3,Górski Reset: Karpacz i Karkonosze,Wyprawy Górskie,4,1150,Czerwiec 2026,Poznań Dworzec Letni (07:00),18,https://images.unsplash.com/photo-1519681393784-d120267933ba?w=700,Kameralny wyjazd w Góry. Zdobywamy Śnieżkę wchodzimy do Świątyni Wang i odpoczywamy.,📌 DZIEŃ 1: Wyjazd 07:00 ➔ Karpacz ➔ Świątynia Wang|📌 DZIEŃ 2: Śnieżka przez Samotnię|📌 DZIEŃ 3: Szklarska Poręba i Wodospad|📌 DZIEŃ 4: Termy Cieplickie i powrót
+4,Magiczny Jarmark we Wrocławiu,Jednodniowe,1,180,Grudzień 2026,Poznań Dworzec Letni (07:30),20,https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=700,Najpiękniejszy jarmark w Polsce! Bajkowy klimat Wrocławskiego Rynku bez martwienia się o auto.,📌 07:30 – Wyjazd z Poznania|📌 10:00 – Spacer z przewodnikiem po Ostrowie Tumskim|📌 13:00 – Czas wolny na jarmarku|📌 19:00 – Wyjazd z Wrocławia | 21:30 Powrót
+5,Urokliwy Szprewald – Niemiecka Wenecja,Jednodniowe,1,290,Lipiec 2026,Poznań Dworzec Letni (06:30),20,https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700,Tradycyjny rejs łodziami pychówkami po malowniczych kanałach wodnych z degustacją ogórków.,📌 06:30 – Wyjazd z Poznania|📌 10:00 – 3-godzinny rejs płaskodennymi łodziami|📍 Czas wolny w wiosce Lübbenau|📌 17:30 – Wyjazd do Polski | 21:00 Powrót
+6,Wiedeń i Budapeszt – Perły Dunaju,Egzotyka i Objazdówki,4,1490,Majówka 2026,Poznań MTP (05:00),18,https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=700,Intensywna objazdówka małą grupą! Pałac Schönbrunn w Wiedniu i nocny rejs w Budapeszcie.,📌 DZIEŃ 1: Przejazd do Wiednia|📌 DZIEŃ 2: Zwiedzanie Wiednia i przejazd do Budapesztu|📌 DZIEŃ 3: Budapeszt i wieczorny rejs statkiem|📌 DZIEŃ 4: Powrót do Poznania
 """
 
 @st.cache_data
@@ -302,7 +305,7 @@ if tryb_aplikacji == "Katalog Wycieczek":
             st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# WIDOK: O KRZYSZTOFIE
+# WIDOK: O KRZYSZTOFIE & OSOBISTE KADRY
 # ==========================================
 elif tryb_aplikacji == "🙋‍♂️ O Krzyśku & Galeria Podróży":
     st.markdown("""
