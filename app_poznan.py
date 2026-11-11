@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 import os
+import glob
 from PIL import Image, ImageOps
 
 # ==========================================
@@ -12,12 +13,32 @@ st.set_page_config(page_title="Poznań Travel - Wyprawy z Krzysztofem", page_ico
 FOLDER_ZDJEC = "zdjecia"
 
 def daj_sciezke(nazwa_pliku):
-    """Szuka pliku w folderze zdjecia/ lub katalogu głównym."""
-    sciezka_folder = os.path.join(FOLDER_ZDJEC, nazwa_pliku)
-    if os.path.exists(sciezka_folder):
-        return sciezka_folder
-    elif os.path.exists(nazwa_pliku):
-        return nazwa_pliku
+    """Szuka pliku w root, subfolderze zdjecia/ oraz w dopasowaniach bez względu na wielkość liter."""
+    if not nazwa_pliku:
+        return None
+    
+    # 1. Sprawdź dokładną ścieżkę
+    mozliwe_sciezki = [
+        nazwa_pliku,
+        os.path.join(FOLDER_ZDJEC, nazwa_pliku),
+        os.path.basename(nazwa_pliku),
+        os.path.join(FOLDER_ZDJEC, os.path.basename(nazwa_pliku))
+    ]
+    
+    for s in mozliwe_sciezki:
+        if os.path.exists(s) and os.path.isfile(s):
+            return s
+            
+    # 2. Szukanie odporne na wielkość liter / rozszerzenia (.JPG vs .jpeg)
+    czysta_nazwa = os.path.basename(nazwa_pliku).lower()
+    szukaj_w = [".", FOLDER_ZDJEC] if os.path.exists(FOLDER_ZDJEC) else ["."]
+    
+    for kat in szukaj_w:
+        for root, _, files in os.walk(kat):
+            for f in files:
+                if f.lower() == czysta_nazwa:
+                    return os.path.join(root, f)
+                    
     return None
 
 # ==========================================
@@ -41,13 +62,14 @@ def pokaz_zdjecie_szybko(zrodlo):
         st.image("https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=700", use_container_width=True)
         return
         
-    if zrodlo.startswith("http"):
+    if isinstance(zrodlo, str) and zrodlo.startswith("http"):
         st.image(zrodlo, use_container_width=True)
     else:
         img_pil = zaladuj_i_zmniejsz_zdjecie(zrodlo)
         if img_pil is not None:
             st.image(img_pil, use_container_width=True)
         else:
+            # Fallback bez MediaFileStorageError
             st.image("https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=700", use_container_width=True)
 
 # ==========================================
@@ -166,7 +188,7 @@ if "i_city" not in st.session_state: st.session_state.i_city = 0
 if "i_egzotyka" not in st.session_state: st.session_state.i_egzotyka = 0
 if "i_natura" not in st.session_state: st.session_state.i_natura = 0
 
-# BAZA TRAS Z LINKAMI Z SIECI (BEZ TWOICH ZDJĘĆ PROFILOWYCH W KATALOGU)
+# BAZA TRAS Z LINKAMI WEB DLA JEDNOLITOŚCI KATALOGU
 dane_raw = """Id,Nazwa,Kategoria,Dni,CenaOsoba,Termin,Zbiorka,LimitOsob,Zdjecie,Opis,Program
 1,Jarmark Bożonarodzeniowy w Dreznie,Jednodniowe,1,260,Grudzień 2026,Poznań Dworzec Letni (05:30),20,https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=700,Najstarsi producenci piernika i słynny Striezelmarkt! Klimatyczny wyjazd małym komfortowym busem.,📌 05:30 – Zbiórka Poznań Dworzec Letni|📌 10:30 – Zwiedzanie Drezna z przewodnikiem|📍 Pałac Zwinger Frauenkirche Opera Sempera|📌 13:30 – Czas wolny na Striezelmarkt|📌 18:30 – Wyjazd w drogę powrotną|📌 23:00 – Powrót do Poznania
 2,Weekend w Berlinie i Poczdamie,Weekendowe,2,690,Maj 2026,Poznań MTP (06:30),20,https://images.unsplash.com/photo-1560969184-10fe8719e047?w=700,Odkryj pałace Sanssouci oraz tętniący życiem Berlin. Nocleg ze śniadaniem w hotelu 3★.,📌 DZIEŃ 1: Wyjazd z Poznania 06:30 ➔ Poczdam Ogrody Sanssouci ➔ Nocleg w Berlinie|📌 DZIEŃ 2: Śniadanie ➔ Brama Brandenburska Reichstag ➔ Rejs statkiem po Szprewie ➔ Powrót 21:00
@@ -305,7 +327,7 @@ if tryb_aplikacji == "Katalog Wycieczek":
             st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# WIDOK: O KRZYSZTOFIE & TWOJE FOTKI Z DYSKU
+# WIDOK: O KRZYSZTOFIE & OSOBISTE KADRY
 # ==========================================
 elif tryb_aplikacji == "🙋‍♂️ O Krzyśku & Galeria Podróży":
     st.markdown("""
